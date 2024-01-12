@@ -71,9 +71,15 @@ export default function SignIn() {
           <span className="font-bold text-blue-400 hover:text-blue-500 transition">Create!</span>
         </Link>
       </div>
-      <p className='flex text-white mt-5 font-bold justify-center py-2 px-4 bg-red-700 rounded-lg'>
+      {/* <p className='flex text-white mt-5 font-bold justify-center py-2 px-4 bg-red-700 rounded-lg'>
         {error ? error.message || 'Something went wrong!' : ''}
-      </p>
+      </p> */}
+
+      {error ? <p className='flex text-white mt-5 font-bold justify-center py-2 px-4 bg-red-700 rounded-lg transition'>
+        {error.message || 'Something went wrong !'}
+      </p>: <p></p>
+
+      }
     </div>
   );
 }
