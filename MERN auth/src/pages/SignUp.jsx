@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
+
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -28,6 +30,8 @@ export default function SignUp() {
       });
       const data = await res.json();
       setLoading(false);
+
+      navigate('/sign-in')
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -48,7 +52,7 @@ export default function SignUp() {
         />
         <input
           type="email"
-          placeholder="Example@gmail.com"
+          placeholder="Email"
           id="email"
           className="bg-slate-100 p-3 rounded-lg outline-none"
           onChange={handleChange}
@@ -70,11 +74,11 @@ export default function SignUp() {
       <div className="flex gap-2 mt-3 font-semibold justify-center">
         <p>Already have an account?</p>
         <Link to="/sign-in">
-          <span className="font-bold text-blue-400 hover:text-blue-500 transition">I'm logged in!</span>
+          <span className="font-bold text-blue-400 hover:text-blue-500 transition">Im logged in!</span>
         </Link>
       </div>
       {error && (
-        <p className="text-red-700 font-bold mt-3">
+        <p className="flex text-red-700 font-bold mt-3 justify-center">
           Something went wrong :c
         </p>
       )}
