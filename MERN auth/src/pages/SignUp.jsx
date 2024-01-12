@@ -35,8 +35,8 @@ export default function SignUp() {
   };
 
   return (
-    <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-semibold my-7">Sign up</h1>
+    <div className="p-3 max-w-lg m-auto ">
+      <h1 className="text-3xl text-center font-semibold my-7">Sign Up</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -67,14 +67,14 @@ export default function SignUp() {
           {loading ? "Loading.." : "Sign Up"}
         </button>
       </form>
-      <div className="flex gap-2 mt-5 font-semibold">
-        <p>Have an account?</p>
+      <div className="flex gap-2 mt-3 font-semibold justify-center">
+        <p>Already have an account?</p>
         <Link to="/sign-in">
-          <span className="text-blue-500 hover:underline ">Sign in</span>
+          <span className="font-bold text-blue-400 hover:text-blue-500 transition">I'm logged in!</span>
         </Link>
       </div>
       {error && (
-        <p className="text-red-700 font-bold mt-5">
+        <p className="text-red-700 font-bold mt-3">
           Something went wrong :c
         </p>
       )}
