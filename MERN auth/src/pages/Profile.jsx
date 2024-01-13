@@ -7,27 +7,31 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import { useDispatch } from "react-redux";
+import { updateUserFailure,updateUserSuccess, updateUserStart } from "../redux/user/userSlice";
 
 export default function Profile() {
+  const dispatch = useDispatch();
   const fileRef = useRef(null);
-  const { currentUser } = useSelector((state) => state.user);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   useEffect(() => {
     if (image) {
       handleFileUpload(image);
     }
   }, [image]);
-
   const handleFileUpload = async (image) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + image.name;
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, image);
     uploadTask.on(
-      "state_changed",
+      'state_changed',
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -43,10 +47,62 @@ export default function Profile() {
       }
     );
   };
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error));
+    }
+  };
+
+  // const handleDeleteAccount = async () => {
+  //   try {
+  //     dispatch(deleteUserStart());
+  //     const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+  //       method: 'DELETE',
+  //     });
+  //     const data = await res.json();
+  //     if (data.success === false) {
+  //       dispatch(deleteUserFailure(data));
+  //       return;
+  //     }
+  //     dispatch(deleteUserSuccess(data));
+  //   } catch (error) {
+  //     dispatch(deleteUserFailure(error));
+  //   }
+  // };
+
+  // const handleSignOut = async () => {
+  //   try {
+  //     await fetch('/api/auth/signout');
+  //     dispatch(signOut())
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
           ref={fileRef}
@@ -68,7 +124,7 @@ export default function Profile() {
           ) : imagePercent > 0 && imagePercent < 100 ? (
             <span className='text-slate-900 font-semibold'>{`Uploading: ${imagePercent} %`}</span>
           ) : imagePercent === 100 ? (
-            <span className='text-green-500 font-semibold'>Image uploaded successfully</span>
+            <span className='text-green-500 font-semibold'>Image uploaded successfully!</span>
           ) : (
             ''
           )}
@@ -79,6 +135,7 @@ export default function Profile() {
           placeholder="Username"
           id="username"
           className="bg-slate-100 rounded-lg p-3 outline-none"
+          onChange={handleChange}
         />
         <input
           defaultValue={currentUser.email}
@@ -93,18 +150,22 @@ export default function Profile() {
           id="password"
           className="bg-slate-100 rounded-lg p-3 outline-none"
         />
-        <button className="bg-slate-700 font-bold text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-70">
-          Update
+        <button disabled={loading} className="bg-slate-700 font-bold text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-70">
+        {loading ? "Loading.." : "Update"}
         </button>
       </form>
-      <div className="flex flex-col sm:flex-row  justify-between mt-2 sm:mt-4 font-bold gap-2 sm:gap-0">
-        <div className="text-white justify-center text-center py-3 px-4 bg-red-700 rounded-lg cursor-pointer hover:opacity-95 transition">
+      <div className="flex flex-col sm:flex-row  justify-between mt-2 sm:mt-4 font-bold gap-2 sm:gap-4">
+        <div className="text-white justify-center text-center py-3 px-4 bg-red-800 sm:basis-3/5 rounded-lg cursor-pointer hover:opacity-95 transition">
           Delete account
         </div>
-        <div className="text-white justify-center text-center py-3 px-4 bg-red-700 rounded-lg hover:opacity-90 cursor-pointer transition">
+        <div className="text-white justify-center text-center py-3 px-4 bg-red-800 sm:basis-2/5 rounded-lg hover:opacity-90 cursor-pointer transition">
           Sign Out
         </div>
       </div>
+      <p className='text-red-500 mt-5 font-semibold text-center'>{error && 'Something went wrong!'}</p>
+      <p className='text-green-500 mt-5 font-semibold text-center'>
+        {updateSuccess && 'User is updated successfully!'}
+      </p>
     </div>
   );
 }
